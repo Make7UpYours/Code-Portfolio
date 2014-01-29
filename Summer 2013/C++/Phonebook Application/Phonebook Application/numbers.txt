@@ -1,0 +1,67 @@
+FIRST_NAME	LAST_NAME		PHONE_NUMBER			COUNTRY
+
+Kazue       Akiyama         81-3-549-5823			Japan
+
+Suresha 	Bandyopadhyay	91-79-3424-5943			India
+Shanti 		Bhattacharya	91-11-1232-3452			India
+Lili 		Bonhomme		33-05-23-16-45-45		France
+Edouard 	Bonnet 			33-01-13-45-65-76		France
+Augustine 	Bordelon		33-06-43-34-34-27		France
+
+Aubin		Colbert			33-03-13-45-25-49		France
+Oriane 		Cousineau		33-03-54-54-22-56		France
+
+Baptiste 	Durant			33-02-54-26-55-27		France
+
+Viriato 	Ferreira		351-38-281-9218			Portugal
+Viriato 	Ferreira		351-38-281-9218			Portugal
+
+Nirmala 	Gadhavi			91-22-4523-1223			India
+
+Takashi     Hashimoto       81-3-549-5823			Japan
+Pritha      Iyer            91-79-3424-5943			India
+
+Yumiko 		Kobayashi		81-3-549-5823			Japan
+
+Mireille    Lebeau          33-04-14-65-35-96		France
+
+Airi 		Matsumoto		81-24-6-484-2892		Japan
+Eufemia 	Medeiros		351-23-383-1912			Portugal
+
+Nilam       Narang          91-79-3424-5943			India
+Daichi      Nakano          81-3-549-5823			Japan
+
+Sanjana 	Patil			91-33-2352-3424			India
+Prabhat 	Patil			91-44-4639-5392			India
+Prudence 	Pettigrew		33-09-62-65-16-52		France
+Arsene 		Poulin			33-04-14-65-35-96		France
+
+Ayame       Oshiro          81-3-549-5823			Japan
+
+Yvette      Poulin          33-04-14-65-35-96		France
+
+Fionn       Quirke          353-1-234-2342          Ireland
+
+Georgine    Roche           33-04-14-65-35-96		France
+
+Abhay       Singh           91-44-4639-5392			India
+Tsubasa     Saito           81-19-6-256-4923		Japan
+Claudie     Simon           33-04-14-65-35-96		France
+
+Ayame 		Tachibana		81-19-6-256-4923		Japan
+Saburou 	Tanaka			81-11-234-2909			Japan
+
+Shirou 		Ueda			81-58-585-2828			Japan
+
+Parth       Vemulakonda     91-33-2352-3424			India
+Ulrich      Vincent         33-04-14-65-35-96		France
+
+Akio        Watanabe        81-58-585-2828			Japan
+
+Hui         Xun             86-10-4252-1231         Chinese
+
+Naomi       Yamada          81-19-6-256-4923		Japan
+Florian     Yount           33-04-14-65-35-96		France
+
+Teodora     Zabek           48-22-382-32-12         Poland
+

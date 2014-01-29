@@ -1,0 +1,26 @@
+PLAYERS: 	 1	 2	 3	 4	 5
+-------- 	---	---	---	---	---
+  SCORE: 	9	4	11	6	3
+  SCORE: 	21	18	23	12	14
+  SCORE: 	26	31	35	20	19
+  SCORE: 	34	42	46	26	26
+  SCORE: 	43	55	56	38	29
+  SCORE: 	45	68	69	51	32
+  SCORE: 	55	81	78	61	36
+  SCORE: 	58	85	89	67	39
+  SCORE: 	68	91	94	74	41
+  SCORE: 	76	95	106	81	54
+  SCORE: 	88	101	115	85	59
+  SCORE: 	100	114	125	93	65
+  SCORE: 	104	117	134	105	73
+  SCORE: 	115	125	143	115	76
+  SCORE: 	127	129	147	124	83
+  SCORE: 	129	138	154	133	97
+  SCORE: 	136	145	157	136	99
+  SCORE: 	142	154	165	146	111
+  SCORE: 	152	159	175	150	115
+  SCORE: 	154	166	183	154	120
+
+---------------------------
+The winner is player 3 with a total of 183 points
+Congrats player 3!

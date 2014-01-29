@@ -1,0 +1,12 @@
+British
+english
+177
+152
+Chinese
+mandarin
+171
+145
+Indian
+hindi
+165
+130

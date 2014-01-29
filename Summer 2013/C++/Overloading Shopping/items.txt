@@ -1,0 +1,12 @@
+Laptop
+1250.00
+Printer
+499.99
+Desktop
+399.99
+Monitor
+125.50
+Keyboard
+45.00
+Mouse
+12.99

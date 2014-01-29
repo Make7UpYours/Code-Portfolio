@@ -1,0 +1,12 @@
+Belko-Brien 101 CS-201L
+Chiem-Kien 102 CS-201L
+Corcoro-Bryan-Mathew 103 CS-201L
+Freeman-William 104 CS-201L
+Ho-Daniel 105 CS-201L
+Malone-Brandon 106 CS-201L
+Qaradagi-Karwan 107 CS-201L
+Qaradagi-Hemin 108 CS-201L
+Robinson-Jason 109 CS-201L
+Schneider-Andrew 110 CS-201L
+Szyba-Jeremy 111 CS-201L
+Waier-Brad 112 CS-201L

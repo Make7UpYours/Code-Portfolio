@@ -1,0 +1,5 @@
+Title 	 Author 	 ISBN
+Understanding Computers: Today & Tomorrow, Comprehensive 	 Deborah Morley 	 1423925211
+Logic and Computer Design Fundamentals 	 M. Morris Mano 	 1131678493
+Computer Science: An Overview 	 J. Glenn Brookshear 	 1132569035
+Computer Science Illuminated 	 Nell Dale 	 1449672841

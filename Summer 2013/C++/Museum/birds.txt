@@ -1,0 +1,15 @@
+Sparrow
+1
+seed, insects
+11.4
+0.03
+peacock
+0
+fruits, insects
+115
+10
+ostrich
+grass, fruit
+0
+240
+250

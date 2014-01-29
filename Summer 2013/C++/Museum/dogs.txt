@@ -1,0 +1,12 @@
+Airedale terrier
+11.5
+58
+60
+Rhodesian Ridgeback
+10.25
+65
+85
+Beauceron
+12
+70
+90
