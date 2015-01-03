@@ -1,0 +1,104 @@
+A86 V4.05 assembly of TIME.COM                                2014-03-11  18:15
+SYSTEMTIME CLOCK                                              Page 1
+Source: TIME.ASM                                            
+
+  Begin Source: TIME.ASM
+    1                                     TITLE   SYSTEMTIME CLOCK
+    2                                     PAGE    60, 132
+    3                             ;
+    4                             ;       This program reads the system time clock from the BIOS and
+    5                             ;       prints it back to the screen along with the current date.
+    6                             ;       written by William Freeman
+    7                             ;       on March 5, 2014
+    8                             ;
+    9                             ;       define constants
+   10                             ;
+   11 = : 000D                    CR      EQU     0DH     ;define carriage return
+   12 = : 000A                    LF      EQU     0AH     ;define line feed
+   13 = : 0024                    EOT     EQU     '$'     ;define end of text marker
+   14 = : 0000                    NULL    EQU     0       ;define NULL byte
+   15                             ;
+   16                             ;       define variables
+   17                             ;
+   18 0100  E9 41 00                      JMP     START   ;jump over variable definitions
+   19 0103  43 75 72 72 65 6E     TMSG    DB      "Current System Time: "
+   20 0118  00 00 3A 00 00 3A     TIME    DB      2 DUP ?,':',2 DUP ?,':',2 DUP ?,EOT
+   21 0121  0D 0A 43 75 72 72     DMSG    DB      CR, LF, "Current System Date: "
+   22 0138  00 00 20 00 00 2C     DATE    DB      2 DUP ?, " ", 2 DUP ?, ", ", 4 DUP ?, EOT
+   23                             ;
+   24                             ;       Code Segment
+   25                             ;
+   26 0144  B4 02                 START:  MOV     AH, 02H         ;read BIOS time-clock
+   27 0146  CD 1A                         INT     1AH             ;CH->hrs, CL->min, DH->sec
+   28                             
+   29 0148  BE 18 01                      LEA     SI, TIME        ;point to TIME data
+   30 014B  88 E8                         MOV     AL, CH          ;store hours
+   31 014D  E8 47 00                      CALL    BCDASC          ;convert hours from BCD to ASCII
+   32                             
+   33 0150  83 C6 02                      ADD     SI, 2           ;point to mins
+   34 0153  88 C8                         MOV     AL, CL          ;store mins
+   35 0155  E8 3F 00                      CALL    BCDASC          ;convert mins from BCD to ASCII
+   36                             
+   37 0158  83 C6 02                      ADD     SI, 2           ;point to secs
+   38 015B  8A C6                         MOV     AL, DH          ;store secs
+   39 015D  E8 37 00                      CALL    BCDASC          ;convert secs from BCD to ASCII
+   40                             
+   41 0160  B4 09                         MOV     AH, 09H         ;display time
+   42 0162  BA 03 01                      LEA     DX, TMSG
+   43 0165  CD 21                         INT     21H
+   44                             
+   45 0167  B4 04                         MOV     AH, 04H         ;read BIOS date
+   46 0169  CD 1A                         INT     1AH             ;CH->cent, CL->year, DH->month, DL->day
+   47                             
+   48 016B  BE 38 01                      LEA     SI, DATE        ;point to DATE data
+   49 016E  8A C6                         MOV     AL, DH          ;store month
+   50 0170  E8 24 00                      CALL    BCDASC          ;convert month from BCD to ASCII
+A86 V4.05 assembly of TIME.COM                                                                                     2014-03-11  18:15
+SYSTEMTIME CLOCK                                                                                                   Page 2
+Source: TIME.ASM                                            
+
+   52 0173  83 C6 02                      ADD     SI, 2           ;point to day
+   53 0176  8A C2                         MOV     AL, DL          ;store day
+   54 0178  E8 1C 00                      CALL    BCDASC          ;convert day from BCD to ASCII
+   55                             
+   56 017B  83 C6 03                      ADD     SI, 3           ;point to cent
+   57 017E  88 E8                         MOV     AL, CH          ;store cent
+   58 0180  E8 14 00                      CALL    BCDASC          ;convert cent from BCD to ASCII
+   59                             
+   60 0183  83 C6 01                      ADD     SI, 1           ;point to year
+   61 0186  88 C8                         MOV     AL, CL          ;store year
+   62 0188  E8 0C 00                      CALL    BCDASC          ;convert year from BCD to ASCII
+   63                             
+   64 018B  B4 09                         MOV     AH, 09H         ;display date
+   65 018D  BA 21 01                      LEA     DX, DMSG
+   66 0190  CD 21                         INT     21H
+   67                             
+   68 0192  B8 00 4C                      MOV     AX, 4C00H       ;clean exit
+   69 0195  CD 21                         INT     21H
+   70                             ;
+   71                             ;***************************************************************************
+   72                             ;       SUBROUTINES
+   73                             ;***************************************************************************
+   74                             ;       Subroutine BCSDASC
+   75                             ;
+   76                             ;       This subroutine converts a byte of BCD into two bytes of
+   77                             ;       printable ASCII characters. No error checking is performed.
+   78                             ;
+   79                             ;       ENTRY:  SI points to the location where ASCII values are to be stored
+   80                             ;               AL contains the BCD byte
+   81                             ;       EXIT:   The BCD byte is converted to ASCII format for screen output
+   82                             ;               The ASCII bytes will be stored in the memory location that SI
+   83                             ;               points to sequentially
+   84 0197  88 C4                 BCDASC: MOV     AH, AL          ;save BCD
+   85 0199  C0 E8 04                      SHR     AL, 4           ;shift 4-bits
+   86                             
+   87 019C  04 30                         ADD     AL, 30H         ;make ASCII
+   88 019E  88 04                         MOV     B[SI], AL       ;save ASCII
+   89 01A0  46                            INC     SI              ;point to next byte
+   90                             
+   91 01A1  80 E4 0F                      AND     AH, 0FH         ;max out lower 4-bits
+   92 01A4  80 C4 30                      ADD     AH, 30H         ;make ASCII
+   93 01A7  88 24                         MOV     B[SI], AH       ;save ASCII
+   94                             
+   95 01A9  C3                            RET
+

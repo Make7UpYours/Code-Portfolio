@@ -1,0 +1,119 @@
+A86 V4.05 assembly of BUBBLE.COM                              2014-03-26  14:49
+BUBBLE SORT                                                   Page 1
+Source: BUBBLE.ASM                                          
+
+  Begin Source: BUBBLE.ASM
+    1                                     TITLE   BUBBLE SORT
+    2                                     PAGE    60, 132
+    3                             ;
+    4                             ;       This program takes a dataset input from the user and
+    5                             ;       performs a bubble sort on the dataset.
+    6                             ;       written by William Freeman
+    7                             ;       on March 25, 2014
+    8                             ;
+    9                             ;       define constants
+   10                             ;
+   11 = : 000D                    CR      EQU     0DH             ;define carriage return
+   12 = : 000A                    LF      EQU     0AH             ;define line feed
+   13 = : 0024                    EOT     EQU     '$'             ;define end of text marker
+   14 = : 0000                    NULL    EQU     0               ;define NULL byte
+   15 = : 0020                    SPACE   EQU     ' '             ;define ASCII space
+   16                             ;
+   17                             ;       define MACROS
+   18                             ;
+   19                             READ    MACRO
+   20                                     LEA     DX, #1          ;point to input buffer
+   21                                     MOV     AH, 0AH         ;set function code
+   22                                     INT     21H             ;read string from keyboard
+   23                                     #EM
+   24                             WRITE   MACRO
+   25                                     LEA     DX, #1          ;point to message
+   26                                     MOV     AH,09H          ;set function code
+   27                                     INT     21H             ;write the message
+   28                                     #EM
+   29                             ;
+   30                             ;       define variables
+   31                             ;
+   32 0100  E9 8A 00                      JMP     START           ;jump over variable definations
+   33 0103  45 6E 74 65 72 20     DATAMSG DB      "Enter a sequence to be sorted: ", EOT
+   34 0123  0D 0A 0A 59 6F 75     NSRTMSG DB      CR,LF,LF, "Your original unsorted data:",CR,LF,LF,EOT
+   35 0146  0D 0A 0A 53 6F 72     SRTMSG  DB      CR,LF,LF, "Sorted data:", CR,LF,LF,EOT
+   36 0159  32 00 00 00 00 00     INBUF   DB      50, ?, 50 DUP ?
+   37                             ;
+   38                             ;       Code Segment
+   39                             ;
+   40 018D  BA 03 01 B4 09 CD     START:  WRITE   DATAMSG         ;prompt user for input
+   41 0194  BA 59 01 B4 0A CD             READ    INBUF           ;read input from user
+   42 019B  BA 23 01 B4 09 CD             WRITE   NSRTMSG         ;display unsorted data entered
+   43                             
+   44 01A2  BE 5B 01                      LEA     SI, INBUF+2     ;point to data
+   45 01A5  E8 15 00                      CALL    PRINT           ;print the unsorted data
+   46                             
+   47 01A8  BA 46 01 B4 09 CD             WRITE   SRTMSG          ;display sorted data
+   48 01AF  BE 5B 01                      LEA     SI, INBUF+2     ;point to data
+   49 01B2  E8 1B 00                      CALL    BSORT           ;perform bubble sort
+   50 01B5  E8 05 00                      CALL    PRINT           ;print the sorted data
+A86 V4.05 assembly of BUBBLE.COM                                                                                   2014-03-26  14:49
+BUBBLE SORT                                                                                                        Page 2
+Source: BUBBLE.ASM                                          
+
+   52 01B8  B8 00 4C                      MOV     AX, 4C00H       ;clean exit
+   53 01BB  CD 21                         INT     21H
+   54                             ;
+   55                             ;***************************************************************************
+   56                             ;       SUBROUTINES
+   57                             ;***************************************************************************
+   58                             ;       Subroutine PRINT
+   59                             ;
+   60                             ;       This subroutine reads through a dataset and prints off
+   61                             ;       each element of the data set with spaces between each
+   62                             ;       element.
+   63                             ;
+   64                             ;       ENTRY:  SI points to the first element in the dataset to be printed.
+   65                             ;       EXIT:   The dataset is printed to the screen.
+   66                             ;
+   67 01BD  8A 4C FF              PRINT:  MOV     CL, B[SI-1]     ;number of times to loop
+   68 01C0  B4 02                 XLOOP:  MOV     AH, 02H         ;set function code
+   69 01C2  8A 14                         MOV     DL, B[SI]       ;load in next data element
+   70 01C4  CD 21                         INT     21H
+   71 01C6  B2 20                         MOV     DL, SPACE       ;print a space
+   72 01C8  CD 21                         INT     21H
+   73 01CA  46                            INC     SI
+   74 01CB  FE C9                         DEC     CL
+   75 01CD  75 F1                         JNE     XLOOP           ;loop until all data is printed
+   76 01CF  C3                            RET
+   77                             ;
+   78                             ;       Subroutine BSORT
+   79                             ;
+   80                             ;       This subroutine iterates though a dataset and uses the
+   81                             ;       bubblesort algorithm to sort the elements in descending
+   82                             ;       order.
+   83                             ;
+   84                             ;       ENTRY:  SI points to the first element in the dataset to be sorted.
+   85                             ;       EXIT:   The dataset is now sorted.
+   86                             ;
+   87 01D0  8A 7C FF              BSORT:  MOV     BH, B[SI-1]     ;obtain the outter loop count
+   88 01D3  8A 5C FF                      MOV     BL, B[SI-1]     ;obtain the inner loop count
+   89 01D6  FE CB                         DEC     BL              ;inner loop is run n-1 times
+   90 01D8  8A CB                 OUTTER: MOV     CL, BL          ;load the inner loop count
+   91                             
+   92 01DA  8A 04                 INNER:  MOV     AL, B[SI]       ;compare values
+   93 01DC  3A 44 01                      CMP     AL, B[SI+1]
+   94 01DF  73 0A                         JAE     NOSWP           ;data element is not less than next element
+   95                             
+   96 01E1  8A 24                         MOV     AH, B[SI]       ;load current dataset element
+   97 01E3  8A 44 01                      MOV     AL, B[SI+1]     ;load next dataset element
+   98 01E6  88 64 01                      MOV     B[SI+1], AH     ;swap elements
+   99 01E9  88 04                         MOV     B[SI], AL
+A86 V4.05 assembly of BUBBLE.COM                                                                                   2014-03-26  14:49
+BUBBLE SORT                                                                                                        Page 3
+Source: BUBBLE.ASM                                          
+
+  101 01EB  46                    NOSWP:  INC     SI              ;point to next data element
+  102 01EC  FE C9                         DEC     CL              ;decrease inner loop count
+  103 01EE  75 EA                         JNE     INNER           ;inner loop until CL == 0
+  104 01F0  BE 5B 01                      LEA     SI, INBUF+2     ;point back to first data element
+  105 01F3  FE CF                         DEC     BH              ;decrease outter loop count
+  106 01F5  75 E1                         JNE     OUTTER          ;outter loop until BH == 0
+  107 01F7  C3                            RET
+

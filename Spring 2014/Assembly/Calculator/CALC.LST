@@ -1,0 +1,459 @@
+A86 V4.05 assembly of CALC.COM                                2014-05-02  17:58
+CALCULATOR                                                    Page 1
+Source: CALC.ASM                                            
+
+  Begin Source: CALC.ASM
+    1                                     TITLE   CALCULATOR
+    2                                     PAGE    60, 132
+    3                             ;
+    4                             ;       This program is a simple calculator program where
+    5                             ;       the user will enter a math operation and the program
+    6                             ;       will output the correct result.
+    7                             ;       written by William Freeman
+    8                             ;       on April 22, 2014
+    9                             ;
+   10                             ;       define constants
+   11                             ;
+   12 = : 000D                    CR      EQU     0DH             ;define carriage return
+   13 = : 000A                    LF      EQU     0AH             ;define line feed
+   14 = : 0024                    EOT     EQU     '$'             ;define end of text marker
+   15 = : 0000                    NULL    EQU     0               ;define NULL byte
+   16 = : 006E                    QUIT    EQU     'n'             ;define program quit byte
+   17 = : 0020                    SPACE   EQU     ' '             ;define ASCII space char
+   18                             ;
+   19                             ;       define MACROS
+   20                             ;
+   21                             READSTR MACRO
+   22                                     MOV     AH, 0AH         ;set function code
+   23                                     LEA     DX, #1          ;point to buffer
+   24                                     INT     21H             ;read string from keyboard
+   25                                     #EM
+   26                             WRITE   MACRO
+   27                                     LEA     DX, #1          ;point to message
+   28                                     MOV     AH,09H          ;set function code
+   29                                     INT     21H             ;write the message
+   30                                     #EM
+   31                             READCH  MACRO
+   32                                     MOV     AH, 01H         ;set function code
+   33                                     INT     21H             ;read char from keyboard
+   34                                     #EM
+   35                             ;
+   36                             ;       define variables
+   37                             ;
+   38 0100  E9 A2 02                      JMP     START           ;jump over variable definations
+   39 0103  2A 2A 2A 2A 2A 2A     WELCOME DB      "*********************************************************",CR,LF,
+   40 013E  2A 20 53 69 6D 70             DB      "* Simple Calculator:                                    *",CR,LF,
+   41 0179  2A 20 45 6E 74 65             DB      "* Enter the math operation you would like to compute    *",CR,LF,
+   42 01B4  2A 20 61 6E 64 20             DB      "* and the program will perform the specified operation. *",CR,LF,
+   43 01EF  2A 20 20 20 20 20             DB      "*                                                       *",CR,LF,
+   44 022A  2A 20 59 6F 75 20             DB      "* You are limited performing operations on numbers      *",CR,LF,
+   45 0265  2A 20 74 68 61 74             DB      "* that are 3-digits or less.                            *",CR,LF,
+   46 02A0  2A 2A 2A 2A 2A 2A             DB      "*********************************************************",EOT
+   47 02DA  0D 0A 0A 45 6E 74     INPRMPT DB      CR,LF,LF,"Enter equation (ex. xxx * xxx for multiplication):",CR,LF,EOT
+   48 0312  0A 00 00 00 00 00     MATH    DB      10,?,10 DUP ?
+   49 031E  0D 0A 0A 57 6F 75     AGAIN   DB      CR,LF,LF,"Would you like to compute another equation? (y/n): ",EOT
+   50 0355  00                    BNUM1   DB      0
+   51 0356  00                    BNUM2   DB      0
+   52 0357  00                    OPCODE  DB      1 DUP ?
+   53 0358  00 00 00              ASCNUM1 DB      3 DUP ?
+   54 035B  00 00 00              ASCNUM2 DB      3 DUP ?
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 2
+Source: CALC.ASM                                            
+
+   55 035E  0D 0A 0A 49 6E 76     ERMSG   DB      CR,LF,LF,"Invalid mathematical operation used, try agian.",EOT
+   56 0391  00 00 00 00 00 24     RESULT  DB      5 DUP ?,EOT
+   57 0397  0D 0A 24              NEWLN   DB      CR,LF,EOT
+   58 039A  3D 20 24              EQUSIGN DB      "= ",EOT
+   59 039D  00 00 00 00 00 24     REMAIN  DB      5 DUP ?,EOT
+   60 03A3  72 24                 REMSG   DB      'r',EOT
+   61                             ;
+   62                             ;       Code Segment
+   63                             ;
+   64 03A5  BA 03 01 B4 09 CD     START:  WRITE   WELCOME         ;display program info
+   65                             
+   66 03AC  BA DA 02 B4 09 CD     CALC:   WRITE   INPRMPT         ;prompt user for input
+   67 03B3  B4 0A BA 12 03 CD             READSTR MATH            ;obtain input from user
+   68                             
+   69 03BA  BE 14 03                      LEA     SI, MATH+2      ;point to equation data
+   70 03BD  BF 58 03                      LEA     DI, ASCNUM1     ;point to first ASCII num
+   71 03C0  E8 A5 00                      CALL    BTX             ;store first number in ASCII
+   72 03C3  E8 D6 00                      CALL    FINDNEXT        ;find next token in equation
+   73                             
+   74 03C6  8A 1C                         MOV     BL, [SI]        ;prep for opcode storage
+   75 03C8  88 1E 57 03                   MOV     OPCODE, BL      ;store opcode
+   76 03CC  46                            INC     SI              ;point to location after opcode
+   77                             
+   78 03CD  E8 CC 00                      CALL    FINDNEXT        ;find next token in equation
+   79 03D0  BF 5B 03                      LEA     DI, ASCNUM2     ;point to second ASCII num
+   80 03D3  E8 92 00                      CALL    BTX             ;store second number in ASCII
+   81                             
+   82 03D6  BE 58 03                      LEA     SI, ASCNUM1     ;point to first ASCII number
+   83 03D9  E8 C9 00                      CALL    A2B8            ;convert to binary
+   84 03DC  A2 55 03                      MOV     BNUM1, AL       ;store first binary number
+   85                             
+   86 03DF  BE 5B 03                      LEA     SI, ASCNUM2     ;point to second ASCII number
+   87 03E2  E8 C0 00                      CALL    A2B8            ;convert to binary
+   88 03E5  A2 56 03                      MOV     BNUM2, AL       ;store second binary number
+   89                             
+   90 03E8  BE 91 03                      LEA     SI, RESULT      ;point SI to result location
+   91 03EB  BF 9D 03                      LEA     DI, REMAIN      ;point to remainder data location
+   92 03EE  A0 55 03                      MOV     AL, BNUM1       ;load first binary number
+   93 03F1  8A 1E 56 03                   MOV     BL, BNUM2       ;load second binary number
+   94                             
+   95 03F5  8A 26 57 03                   MOV     AH, OPCODE      ;prep for opcode determination
+   96 03F9  80 FC 2B                      CMP     AH, '+'         ;check for addition
+   97 03FC  75 06                         JNE     N1              ;continue to determine opcode
+   98                             
+   99 03FE  E8 39 01                      CALL    ADDUP           ;add the two numbers
+  100 0401  E9 2B 00                      JMP     ENDX            ;operation complete
+  101                             
+  102 0404  80 FC 2D              N1:     CMP     AH, '-'         ;check for subtraction
+  103 0407  75 06                         JNE     N2              ;continue to determine opcode
+  104 0409  E8 3C 01                      CALL    SUBEM           ;subtract the two numbers
+  105 040C  E9 20 00                      JMP     ENDX            ;operation complete
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 3
+Source: CALC.ASM                                            
+
+  107 040F  80 FC 2A              N2:     CMP     AH, '*'         ;check for multiplication
+  108 0412  75 06                         JNE     N3              ;continue to determine opcode
+  109 0414  E8 4D 01                      CALL    MULTIPLY        ;multiply the two numbers
+  110 0417  E9 15 00                      JMP     ENDX            ;operation complete
+  111                             
+  112 041A  80 FC 2F              N3:     CMP     AH, '/'         ;check for division
+  113 041D  75 06                         JNE     N4              ;bad opcode
+  114 041F  E8 4B 01                      CALL    DIVIDE          ;divide the two numbers
+  115 0422  E9 1E 00                      JMP     ENDXX           ;operation complete
+  116                             
+  117 0425  BA 5E 03 B4 09 CD     N4:     WRITE   ERMSG           ;bad user
+  118 042C  E9 7D FF                      JMP     CALC            ;force them to try again
+  119                             
+  120 042F  BA 97 03 B4 09 CD     ENDX:   WRITE   NEWLN           ;move to next line
+  121 0436  BA 9A 03 B4 09 CD             WRITE   EQUSIGN         ;display equals sign
+  122 043D  89 F2 B4 09 CD 21             WRITE   SI              ;display result
+  123                             
+  124 0443  BA 1E 03 B4 09 CD     ENDXX:  WRITE   AGAIN           ;ask user if they would like to quit
+  125 044A  B4 01 CD 21                   READCH                  ;obtain user's answer
+  126 044E  0C 20                         OR      AL, 20H         ;convert UC to LC
+  127 0450  3C 6E                         CMP     AL, QUIT        ;determine if user wants to quit
+  128 0452  74 03                         JE      DONE            ;quit program
+  129 0454  E9 55 FF                      JMP     CALC            ;start over again
+  130                             
+  131 0457  B8 00 4C              DONE:   MOV     AX, 4C00H       ;clean exit
+  132 045A  CD 21                         INT     21H
+  133                             
+  134                             
+  135                             ;
+  136                             ;***************************************************************************
+  137                             ;       SUBROUTINES
+  138                             ;***************************************************************************
+  139                             ;
+  140                             ;       Subroutine SLZ
+  141                             ;
+  142                             ;       This subroutine suppresses leading zeros from an ASCII set
+  143                             ;       of numbers
+  144                             ;
+  145                             ;       Entry:  SI points to ASCII numbers
+  146                             ;       Exit:   Numbers no longer have leading zeros
+  147                             ;
+  148 045C  B9 04 00              SLZ:    MOV     CX, 4           ;set counter
+  149 045F  80 3C 30              SLZ0:   CMP     B[SI], '0'      ;check for zero
+  150 0462  75 03                         JNE     SLZ1            ;done if no zeros
+  151 0464  46                            INC     SI              ;point to next number
+  152 0465  E2 F8                         LOOP    SLZ0            ;dec counter and start all over again
+  153 0467  C3                    SLZ1:   RET
+  154                             ;
+  155                             ;***************************************************************************
+  156                             ;
+  157                             ;       Subroutine BTX
+  158                             ;
+  159                             ;       This subroutine separates a token from input string
+  160                             ;
+  161                             ;       Entry:  SI points to input data.
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 4
+Source: CALC.ASM                                            
+
+  162                             ;               DI points to the save location of the token
+  163                             ;       Exit:   SI, DI modified
+  164                             ;
+  165 0468  B9 00 00              BTX:    MOV     CX, 0           ;clear byte counter
+  166 046B  80 3C 20              P0:     CMP     B[SI], SPACE    ;look for end of first token
+  167 046E  74 0A                         JE      P1              ;found space
+  168 0470  80 3C 0D                      CMP     B[SI], CR       ;maybe it was a carriage return
+  169 0473  74 05                         JE      P1              ;yes, treat it as a space
+  170 0475  46                            INC     SI              ;not fund, advance pointer
+  171 0476  FE C1                         INC     CL              ;add 1 to count
+  172 0478  EB F1                         JMP     P0              ;countinue counting
+  173 047A  83 C7 02              P1:     ADD     DI, 2           ;find end of output buffer
+  174 047D  56                            PUSH    SI              ;save input pointer
+  175 047E  4E                            DEC     SI              ;point SI to last input character
+  176 047F  B2 03                         MOV     DL, 3           ;set output byte transfer count
+  177 0481  8A 04                 P3:     MOV     AL, B[SI]       ;get input byte
+  178 0483  4E                            DEC     SI              ;back up input pointer
+  179 0484  88 05                         MOV     B[DI], AL       ;transfer to output
+  180 0486  4F                            DEC     DI              ;back up output pointer
+  181 0487  FE CA                         DEC     DL              ;decrement output count
+  182 0489  FE C9                         DEC     CL              ;decrement input count
+  183 048B  75 F4                         JNZ     P3              ;countinue byte transfer
+  184 048D  80 FA 00                      CMP     DL, 0           ;has output buffer been filled?
+  185 0490  74 08                         JE      P5              ;yes, token is transfered
+  186 0492  C6 05 30              P4:     MOV     B[DI], 30H      ;no, back fill with ASCII 0
+  187 0495  4F                            DEC     DI              ;point back
+  188 0496  FE CA                         DEC     DL              ;decrement output count
+  189 0498  75 F8                         JNE     P4              ;continue fill
+  190 049A  5E                    P5:     POP     SI              ;restore input pointer
+  191 049B  C3                            RET
+  192                             ;
+  193                             ;***************************************************************************
+  194                             ;
+  195                             ;       Subroutine FINDNEXT
+  196                             ;
+  197                             ;       This subroutine locates the next token in a string
+  198                             ;
+  199                             ;       Entry:  SI points to space after previous token
+  200                             ;       Exit:   SI points to the next token
+  201                             ;
+  202                             FINDNEXT:
+  203 049C  80 3C 20                      CMP     B[SI], SPACE    ;look for spaces
+  204 049F  75 03                         JNE     FN0             ;not a space, must be a token
+  205 04A1  46                            INC     SI              ;point to next character
+  206 04A2  EB F8                         JMP     FINDNEXT        ;check next character
+  207 04A4  C3                    FN0:    RET
+  208                             ;
+  209                             ;***************************************************************************
+  210                             ;
+  211                             ;       Subroutine A2B8
+  212                             ;
+  213                             ;       A subroutine to convert 3 ASCII numbers into 8 bit binary
+  214                             ;
+  215                             ;       Entry:  SI points to three ASCII bytes
+  216                             ;       Exit:   8 bit binary returned in AL
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 5
+Source: CALC.ASM                                            
+
+  217                             ;
+  218 04A5  80 24 0F              A2B8:   AND     B[SI], 0FH              ;convert ASCII bytes to binary
+  219                             
+  220 04A8  80 64 01 0F                   AND     B[SI+1], 0FH
+  221                             
+  222 04AC  80 64 02 0F                   AND     B[SI+2], 0FH
+  223                             
+  224 04B0  B4 00                         MOV     AH, 0                   ;clear multiplicand
+  225                             
+  226 04B2  8A 04                         MOV     AL, B[SI]               ;get 100's bytes
+  227                             
+  228 04B4  B3 64                         MOV     BL, 100
+  229                             
+  230 04B6  F6 E3                         MUL     BL                      ;make binary
+  231                             
+  232 04B8  8A F8                         MOV     BH, AL                  ;save it
+  233                             
+  234 04BA  B4 00                         MOV     AH, 0
+  235                             
+  236 04BC  8A 44 01                      MOV     AL, B[SI+1]             ;get tens digit
+  237 04BF  B3 0A                         MOV     BL, 10
+  238                             
+  239 04C1  F6 E3                         MUL     BL                      ;make binary
+  240                             
+  241 04C3  00 F8                         ADD     AL, BH                  ;add to hundreds
+  242                             
+  243 04C5  02 44 02                      ADD     AL, B[SI+2]             ;add units
+  244                             
+  245 04C8  C3                            RET
+  246                             
+  247                             
+  248                             ;
+  249                             ;***************************************************************************
+  250                             ;
+  251                             ;       Subroutine B2A8
+  252                             ;
+  253                             ;       This subroutine converts an 8 bit binary value into three bytes
+  254                             ;       of ASCII
+  255                             ;
+  256                             ;       Entry:  DI points to save buffer for ASCII
+  257                             ;               AL holds 8 bit value to convert
+  258                             ;       Exit:   none
+  259                             ;       Uses: CX as a counter
+  260                             ;
+  261 04C9  B9 00 00              B2A8:   MOV     CX, 0           ;clear counter
+  262 04CC  2C 64                 HUND:   SUB     AL, 100         ;subtract 100
+  263 04CE  72 03                         JC      TENS            ;if over subtracted, process tens
+  264 04D0  41                            INC     CX              ;otherwise add to hundreds count
+  265 04D1  EB F9                         JMP     HUND            ;check for another hundred
+  266 04D3  88 0D                 TENS:   MOV     [DI], CL        ;save hundreds count
+  267 04D5  04 64                         ADD     AL, 100         ;add back excessive subtraction
+  268 04D7  B9 00 00                      MOV     CX, 0           ;clear counter
+  269 04DA  2C 0A                 TENS1:  SUB     AL, 10          ;count how many tens
+  270 04DC  72 03                         JC      UNITS           ;subtracted too much
+  271 04DE  41                            INC     CX              ;increment tens count
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 6
+Source: CALC.ASM                                            
+
+  272 04DF  EB F9                         JMP     TENS1           ;count more
+  273 04E1  88 4D 01              UNITS:  MOV     [DI+1], CL      ;save tens count
+  274 04E4  04 0A                         ADD     AL, 10          ;restore count
+  275 04E6  88 45 02                      MOV     [DI+2], AL      ;save units
+  276 04E9  80 05 30                      ADD     B[DI], 30H      ;convert numbers to ASCII
+  277 04EC  80 45 01 30                   ADD     B[DI+1], 30H
+  278 04F0  80 45 02 30                   ADD     B[DI+2], 30H
+  279 04F4  C3                            RET
+  280                             ;
+  281                             ;***************************************************************************
+  282                             ;
+  283                             ;       Subroutine B2A16
+  284                             ;
+  285                             ;       This subroutine converts a 16 bit binary value to 5 bytes of
+  286                             ;       ASCII
+  287                             ;
+  288                             ;       Entry:  SI points to the location where data is to be saved
+  289                             ;               AX holds the 16 bit value to convert
+  290                             ;       Exit:   SI holds the ASCII value of AX
+  291                             ;       Uses:   BX as a divisor, DX is altered
+  292                             ;
+  293 04F5  BA 00 00              B2A16:  MOV     DX, 0           ;clear DX
+  294 04F8  BB 10 27                      MOV     BX, 10000       ;load BX with divisor
+  295 04FB  F7 F3                         DIV     BX              ;perform division
+  296 04FD  88 04                         MOV     B[SI], AL       ;store the 0 - 9 digit
+  297 04FF  80 04 30                      ADD     B[SI], 30H      ;add ASCII offset
+  298 0502  8B C2                         MOV     AX, DX          ;move remaining value back to AX
+  299 0504  BA 00 00                      MOV     DX, 0           ;clear DX
+  300 0507  BB E8 03                      MOV     BX, 1000        ;load BX with divisor
+  301 050A  F7 F3                         DIV     BX              ;perform division
+  302 050C  88 44 01                      MOV     B[SI+1], AL     ;store thousands digit
+  303 050F  C6 44 01 30                   MOV     B[SI+1], 30H    ;convert to ASCII
+  304 0513  8B C2                         MOV     AX, DX          ;move remaining value back to AX
+  305 0515  BB 00 00                      MOV     BX, 0           ;divisor now only 8 bits, clear BX
+  306 0518  B3 64                         MOV     BL, 100         ;use BL to divide
+  307 051A  F6 F3                         DIV     BL              ;perform division
+  308 051C  88 44 02                      MOV     B[SI+2], AL     ;store hundreds digit
+  309 051F  80 44 02 30                   ADD     B[SI+2], 30H    ;convert to ASCII
+  310 0523  88 E0                         MOV     AL, AH          ;move remaining value into AL
+  311 0525  B4 00                         MOV     AH, 0           ;clear upper range
+  312 0527  B3 0A                         MOV     BL, 10          ;load BL with divisor
+  313 0529  F6 F3                         DIV     BL              ;determine tens value
+  314 052B  88 44 03                      MOV     B[SI+3], AL     ;store tens value
+  315 052E  80 44 03 30                   ADD     B[SI+3], 30H    ;convert to ASCII
+  316 0532  88 64 04                      MOV     B[SI+4], AH     ;remainder is the units
+  317 0535  80 44 04 30                   ADD     B[SI+4], 30H    ;convert to ASCII
+  318 0539  C3                            RET
+  319                             ;
+  320                             ;***************************************************************************
+  321                             ;
+  322                             ;       Subroutine ADDUP
+  323                             ;
+  324                             ;       This subroutine adds two 8 bit binary numbers together and
+  325                             ;       returns their result in ASCII form
+  326                             ;
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 7
+Source: CALC.ASM                                            
+
+  327                             ;       Entry:  The first number to be added is stored in AL
+  328                             ;               The second number is stored in BL
+  329                             ;               SI points to the result location
+  330                             ;       Exit:   ASCII result is returned to the location pointed
+  331                             ;               to by SI
+  332                             ;       Uses:   B2A16 subroutine & SLZ subroutine
+  333                             ;
+  334 053A  B4 00                 ADDUP:  MOV     AH, 0           ;clear carry location
+  335 053C  00 D8                         ADD     AL, BL          ;add first & second num
+  336 053E  80 D4 00                      ADC     AH, 0           ;add carry
+  337 0541  E8 B1 FF                      CALL    B2A16           ;convert AX to ASCII
+  338 0544  E8 15 FF                      CALL    SLZ             ;suppress leading zeros
+  339 0547  C3                            RET
+  340                             ;
+  341                             ;***************************************************************************
+  342                             ;
+  343                             ;       Subroutine SUBEM
+  344                             ;
+  345                             ;       This subroutine subtracts two 8 bit binary numbers and
+  346                             ;       returns their result in ASCII form
+  347                             ;
+  348                             ;       Entry:  The first number is stored in AL
+  349                             ;               The second number is stored in BL
+  350                             ;               SI points to the result location
+  351                             ;       Exit:   ASCII result is returned to the location pointed
+  352                             ;               to by SI
+  353                             ;       Uses:   B2A16 subroutine & SLZ subroutine
+  354                             ;
+  355 0548  28 D8                 SUBEM:  SUB     AL, BL          ;perform subtraction
+  356 054A  73 0F                         JNC     POS             ;jump if result is positive
+  357 054C  B4 00                         MOV     AH, 0           ;clear upper 8 bits
+  358 054E  F6 D8                         NEG     AL              ;perform 2's complement
+  359 0550  E8 A2 FF                      CALL    B2A16           ;convert AX to ASCII
+  360 0553  E8 06 FF                      CALL    SLZ             ;suppress the leading zeros
+  361 0556  4E                            DEC     SI              ;point to previous data location
+  362 0557  C6 04 2D                      MOV     B[SI], '-'      ;insert negative sign
+  363 055A  C3                            RET                     ;return negative number
+  364 055B  B4 00                 POS:    MOV     AH, 0           ;clear upper 8 bits
+  365 055D  E8 95 FF                      CALL    B2A16           ;convert AX to ASCII
+  366 0560  E8 F9 FE                      CALL    SLZ             ;suppress leading zeros
+  367 0563  C3                            RET
+  368                             ;
+  369                             ;***************************************************************************
+  370                             ;
+  371                             ;       Subroutine MULTIPLY
+  372                             ;
+  373                             ;       This subroutine multiplies two 8 bit binary numbers and
+  374                             ;       returns their result in ASCII form
+  375                             ;
+  376                             ;       Entry:  The first number is stored in AL
+  377                             ;               The second number is stored in BL
+  378                             ;               SI points to the result location
+  379                             ;       Exit:   ASCII result is returned to the location pointed
+  380                             ;               to by SI
+  381                             ;       Uses:   B2A16 subroutine & SLZ subroutine
+A86 V4.05 assembly of CALC.COM                                                                                     2014-05-02  17:58
+CALCULATOR                                                                                                         Page 8
+Source: CALC.ASM                                            
+
+  382                             MULTIPLY:
+  383 0564  F6 E3                         MUL     BL              ;perform multiplication
+  384 0566  E8 8C FF                      CALL    B2A16           ;convert AX to ASCII
+  385 0569  E8 F0 FE                      CALL    SLZ             ;suppress leading zeros
+  386 056C  C3                            RET
+  387                             ;
+  388                             ;***************************************************************************
+  389                             ;
+  390                             ;       Subroutine DIVIDE
+  391                             ;
+  392                             ;       This subroutine divides two 8 bit binary numbers and
+  393                             ;       writes their result to the screen
+  394                             ;
+  395                             ;       Entry:  The first number is stored in AL
+  396                             ;               The second number is stored in BL
+  397                             ;               SI points to the result location
+  398                             ;               DI points to the remainder location
+  399                             ;       Exit:   ASCII result is returned to the location pointed
+  400                             ;               to by SI
+  401                             ;               ASCII remainder is retuned to the location pointed
+  402                             ;               to by DI
+  403                             ;       Uses:   B2A16 subroutine & SLZ subroutine
+  404                             ;               WRITE macro
+  405                             ;               EQUSIGN variable & NEWLN variable
+  406 056D  B4 00                 DIVIDE: MOV     AH, 0           ;clear AH for division
+  407 056F  F6 F3                         DIV     BL              ;perform division
+  408 0571  50                            PUSH    AX              ;save remainder
+  409 0572  B4 00                         MOV     AH, 0           ;clear AH for quotient ASCII conversion
+  410 0574  E8 7E FF                      CALL    B2A16           ;convert to ASCII
+  411 0577  E8 E2 FE                      CALL    SLZ             ;suppress quotient leading zeros
+  412 057A  58                            POP     AX              ;restore remainder
+  413 057B  88 E0                         MOV     AL, AH          ;move remainder to AL for ASCII conversion
+  414 057D  B4 00                         MOV     AH, 0           ;clear AH
+  415 057F  50                            PUSH    AX              ;save remainder
+  416 0580  BA 97 03 B4 09 CD             WRITE   NEWLN           ;display a new line
+  417 0587  BA 9A 03 B4 09 CD             WRITE   EQUSIGN         ;display equals sign
+  418 058E  89 F2 B4 09 CD 21             WRITE   SI              ;display quotient
+  419 0594  89 FE                         LEA     SI, DI          ;point to remainder data for ASCII
+  420 0596  58                            POP     AX              ;restore remainder
+  421 0597  E8 5B FF                      CALL    B2A16           ;convert remainder to ASCII
+  422 059A  E8 BF FE                      CALL    SLZ             ;suppress leading zeros
+  423 059D  BA A3 03 B4 09 CD             WRITE   REMSG           ;display 'r'
+  424 05A4  89 F2 B4 09 CD 21             WRITE   SI              ;display remainder
+  425 05AA  C3                            RET
+  426                             ;
+

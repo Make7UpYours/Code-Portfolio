@@ -1,0 +1,240 @@
+A86 V4.05 assembly of GUESS.COM                               2014-04-16  17:05
+GUESS GAME                                                    Page 1
+Source: GUESS.ASM                                           
+
+  Begin Source: GUESS.ASM
+    1                                     TITLE   GUESS GAME
+    2                                     PAGE    60, 132
+    3                             ;
+    4                             ;       This program requires two people, one dealer and
+    5                             ;       player. The dealer has the player guess the number
+    6                             ;       and the player has 3 tries to guess that number.
+    7                             ;       if the player guesses within 3 tries, they win.
+    8                             ;       written by William Freeman
+    9                             ;       on April 9, 2014
+   10                             ;
+   11                             ;       define constants
+   12                             ;
+   13 = : 000D                    CR      EQU     0DH             ;define carriage return
+   14 = : 000A                    LF      EQU     0AH             ;define line feed
+   15 = : 0024                    EOT     EQU     '$'             ;define end of text marker
+   16 = : 0000                    NULL    EQU     0               ;define NULL byte
+   17 = : 006E                    QUIT    EQU     'n'             ;define game quit byte
+   18                             ;
+   19                             ;       define MACROS
+   20                             ;
+   21                             READ    MACRO
+   22                                     MOV     AH, 01H         ;set function code
+   23                                     INT     21H             ;read char from keyboard
+   24                                     #EM
+   25                             WRITE   MACRO
+   26                                     LEA     DX, #1          ;point to message
+   27                                     MOV     AH,09H          ;set function code
+   28                                     INT     21H             ;write the message
+   29                                     #EM
+   30                             NOECHO  MACRO
+   31                                     MOV     AH, 08H         ;set function code
+   32                                     INT     21H             ;read char from keyboard, do not echo
+   33                                     #EM
+   34                             CHKGNUM MACRO
+   35                                     DEC     CL              ;player has used one guess
+   36                                     JZ      NOGUESS         ;player is out of guesses
+   37                                     #EM
+   38                             CHKRND  MACRO
+   39                                     INC     CH              ;increase current round number
+   40                                     CMP     CH, 10          ;determine if max rounds have been played
+   41                                     JE      MAXRND          ;jump if rounds played are equal to 10
+   42                                     #EM
+   43                             SAVERND MACRO
+   44                                     ADD     CH, 30H         ;convert to ASCII
+   45                                     MOV     ROUND, CH       ;store round number
+   46                                     MOV     B[SI], CH       ;save round number for results
+   47                                     ADD     SI, 2           ;add space between round # and dealer's #
+   48                                     SUB     CH, 30H         ;convert back to binary
+   49                                     #EM
+   50                             NEWLINE MACRO
+   51                                     INC     SI              ;point to an empty data location
+   52                                     MOV     B[SI], CR       ;store a carriage return
+   53                                     INC     SI              ;point to next data location
+   54                                     MOV     B[SI], LF       ;store a line feed
+A86 V4.05 assembly of GUESS.COM                                                                                    2014-04-16  17:05
+GUESS GAME                                                                                                         Page 2
+Source: GUESS.ASM                                           
+
+   55                                     INC     SI              ;point to next data location for round #
+   56                                     #EM
+   57                             DETWIN  MACRO
+   58                                     CMP     CL, 3           ;determine if user has 3 guesses left
+   59                                     JE      WIN25           ;player wins 25 dollars
+   60                                     CMP     CL, 2           ;determine if user has 2 guesses left
+   61                                     JE      WIN10           ;player wins 10 dollars
+   62                                     JMP     WIN5            ;player has won their bet back
+   63                                     #EM
+   64                             ;
+   65                             ;       define variables
+   66                             ;
+   67 0100  E9 85 07                      JMP     START           ;jump over variable definations
+   68 0103  2A 2A 2A 2A 2A 2A     PRGMSG  DB      "************************************************************",CR,LF,
+   69 0141  2A 20 47 61 6D 65             DB      "* Game Information:                                        *",CR,LF,
+   70 017F  2A 20 52 65 71 75             DB      "* Requires one dealer and one player, the dealer           *",CR,LF,
+   71 01BD  2A 20 63 68 6F 6F             DB      "* chooses a number and the player has three tries          *",CR,LF,
+   72 01FB  2A 20 74 6F 20 67             DB      "* to guess that number.                                    *",CR,LF,
+   73 0239  2A 20 20 20 20 20             DB      "*                                                          *",CR,LF,
+   74 0277  2A 20 49 66 20 74             DB      "* If the player guesses the number on the first try,       *",CR,LF,
+   75 02B5  2A 20 74 68 65 79             DB      "* they win 25, 10 on second try, and 5 dollars on the last.*",CR,LF,
+   76 02F3  2A 20 20 20 20 20             DB      "*                                                          *",CR,LF,
+   77 0331  2A 20 41 66 74 65             DB      "* After each guess the player will be given a hint,        *",CR,LF,
+   78 036F  2A 20 6C 65 74 74             DB      "* letting the player know if their guess is too high       *",CR,LF,
+   79 03AD  2A 20 6F 72 20 74             DB      "* or too low.                                              *",CR,LF,
+   80 03EB  2A 20 20 20 20 20             DB      "*                                                          *",CR,LF,
+   81 0429  2A 20 54 68 65 20             DB      "* The game will keep going if they player wants to for     *",CR,LF,
+   82 0467  2A 20 61 20 6D 61             DB      "* a maximum of ten rounds. At the end of the game, a       *",CR,LF,
+   83 04A5  2A 20 72 65 70 6F             DB      "* report will be outputted with all the results from       *",CR,LF,
+   84 04E3  2A 20 65 61 63 68             DB      "* each round.                                              *",CR,LF,
+   85 0521  2A 2A 2A 2A 2A 2A             DB      "************************************************************",EOT
+   86 055E  0D 0A 0A 44 65 61     DPRMPT  DB      CR,LF,LF,"Dealer, enter your number: ",EOT
+   87 057D  0D 0A 0A 50 6C 61     GPRMPT  DB      CR,LF,LF,"Player, enter your guess: ",EOT
+   88 059B  0D 0A 0A 57 6F 75     AGAIN   DB      CR,LF,LF,"Would you like to play another round? (y/n): ",EOT
+   89 05CC  0D 0A 0A 44 65 61     BADNUM  DB      CR,LF,LF,"Dealer, you did not enter a valid number. Try again!",EOT
+   90 0604  0D 0A 0A 59 6F 75     TOOLO   DB      CR,LF,LF,"Your guess was a little too low, try again.",EOT
+   91 0633  0D 0A 0A 59 6F 75     TOOHI   DB      CR,LF,LF,"Your guess was a little too high, try again.",EOT
+   92 0663  0D 0A 0A 59 6F 75     WINNER  DB      CR,LF,LF,"Your guess was just right, you win!",EOT
+   93 068A  0D 0A 0A 59 6F 75     NOMORE  DB      CR,LF,LF,"You have reached the maximum number of rounds.",EOT
+   94 06BC  0D 0A 0A 53 6F 72     GAMEOVA DB      CR,LF,LF,"Sorry, you have no more guesses and you lose.",EOT
+   95 06ED  0D 0A 0A 54 68 61     EOR     DB      CR,LF,LF,"Thats the end of the round, the dealers number was: "
+   96 0724  20 24                 DEALNUM DB      ' ',EOT
+   97 0726  0D 0A 0A 52 4F 55     DISPRND DB      CR,LF,LF,"ROUND NUMBER: "
+   98 0737  20 24                 ROUND   DB      ' ',EOT
+   99 0739  0D 0A 2D 2D 2D 2D     DASHES  DB      CR,LF,"---------------",EOT
+  100 074B  0D 0A 0A 47 41 4D     RMSG    DB      CR,LF,LF,"GAME RESULTS:",CR,LF,
+  101 075D  2D 2D 2D 2D 2D 2D             DB      "-------------",CR,LF,
+  102 076C  52 20 44 20 31 20             DB      "R D 1 2 3 RW",CR,LF,
+  103 077A  2D 20 2D 20 2D 20             DB      "- - - - - --",CR,LF
+  104 0788  20 20 20 20 20 20     RESULT  DB      255 DUP ' ',EOT
+  105                             ;
+  106                             ;       Code Segment
+  107                             ;
+  108 0888  BA 03 01 B4 09 CD     START:  WRITE   PRGMSG          ;display program information
+  109 088F  BE 88 07                      LEA     SI, RESULT      ;point to location to store data
+A86 V4.05 assembly of GUESS.COM                                                                                    2014-04-16  17:05
+GUESS GAME                                                                                                         Page 3
+Source: GUESS.ASM                                           
+
+  110 0892  B5 00                         MOV     CH, 0           ;current round number
+  111                             
+  112 0894  80 C5 30 88 2E 37     GAME:   SAVERND                 ;store the round number for output
+  113 08A3  BA 26 07 B4 09 CD             WRITE   DISPRND         ;display the current round number
+  114 08AA  BA 39 07 B4 09 CD             WRITE   DASHES          ;make output pretty
+  115                             
+  116 08B1  BA 5E 05 B4 09 CD             WRITE   DPRMPT          ;prompt dealer for number
+  117 08B8  B4 08 CD 21                   NOECHO                  ;obtain dealer's number (Stored in AL)
+  118 08BC  E8 E2 00                      CALL    NUMVALID        ;check dealer input
+  119 08BF  72 54                         JC      BAD             ;bad input, display message for dealer
+  120                             
+  121 08C1  8A F8                         MOV     BH,AL           ;temp storage of dealer's number
+  122 08C3  88 04                         MOV     B[SI], AL       ;save dealer's number for results
+  123 08C5  83 C6 02                      ADD     SI, 2           ;add space between dealer's # and player's #
+  124 08C8  B1 03                         MOV     CL, 3           ;the number of guesses a player has
+  125                             
+  126 08CA  BA 7D 05 B4 09 CD     GUESS:  WRITE   GPRMPT          ;prompt player for guess
+  127 08D1  B4 01 CD 21                   READ                    ;obtain player's number (Stored in AL)
+  128                             
+  129 08D5  88 04                         MOV     B[SI], AL       ;save player's number for results
+  130 08D7  83 C6 02                      ADD     SI, 2           ;add space between the player's numbers
+  131                             
+  132 08DA  38 F8                         CMP     AL, BH          ;compare dealer's and player's number
+  133 08DC  72 41                         JB      LO              ;player's number is too low
+  134 08DE  77 4C                         JA      HI              ;player's number is too high
+  135 08E0  74 57                         JE      WIN             ;player's number is just right
+  136                             
+  137 08E2  88 3E 24 07           CONT:   MOV     DEALNUM, BH     ;store dealer's number for output
+  138 08E6  BA ED 06 B4 09 CD             WRITE   EOR             ;display the end of round message
+  139 08ED  46 C6 04 0D 46 C6             NEWLINE                 ;add a new line for the next round
+  140                             
+  141 08F6  BA 9B 05 B4 09 CD             WRITE   AGAIN           ;ask player if they want to continue
+  142 08FD  B4 01 CD 21                   READ                    ;obtain player's answer (Stored in AL)
+  143 0901  0C 20                         OR      AL, 20H         ;convert UC to LC
+  144 0903  3C 6E                         CMP     AL, QUIT        ;determine if user wants to quit
+  145 0905  74 02                         JE      DONE            ;quit program
+  146 0907  EB 8B                         JMP     GAME            ;start a new game
+  147                             
+  148 0909  BA 4B 07 B4 09 CD     DONE:   WRITE   RMSG            ;display game results
+  149                             
+  150 0910  B8 00 4C                      MOV     AX, 4C00H       ;clean exit
+  151 0913  CD 21                         INT     21H
+  152                             
+  153 0915  BA CC 05 B4 09 CD     BAD:    WRITE   BADNUM          ;display message for dealer
+  154 091C  E9 75 FF                      JMP     GAME            ;reprompt dealer for input
+  155                             
+  156 091F  BA 04 06 B4 09 CD     LO:     WRITE   TOOLO           ;display message for too low of a guess
+  157 0926  FE C9 74 62                   CHKGNUM                 ;determine if there are any more guesses
+  158 092A  EB 9E                         JMP     GUESS           ;ask for next guess from player
+  159                             
+  160 092C  BA 33 06 B4 09 CD     HI:     WRITE   TOOHI           ;display message for too high of a guess
+  161 0933  FE C9 74 55                   CHKGNUM                 ;determine if there are any more guesses
+  162 0937  EB 91                         JMP     GUESS           ;ask for next guess from player
+A86 V4.05 assembly of GUESS.COM                                                                                    2014-04-16  17:05
+GUESS GAME                                                                                                         Page 4
+Source: GUESS.ASM                                           
+
+  164 0939  BA 63 06 B4 09 CD     WIN:    WRITE   WINNER          ;player has won
+  165 0940  80 F9 03 74 08 80             DETWIN                  ;determine how much the player has won
+  166                             
+  167 094D  83 C6 04              WIN25:  ADD     SI,4            ;move SI to point to RW
+  168 0950  C6 04 32                      MOV     B[SI],'2'       ;insert ASCII 2 for result output
+  169 0953  46                            INC     SI              ;point to next data slot
+  170 0954  C6 04 35                      MOV     B[SI],'5'       ;insert ASCII 5 for result output
+  171                             
+  172 0957  FE C5 80 FD 0A 74             CHKRND                  ;see if there are more rounds to be played
+  173 095E  EB 82                         JMP     CONT            ;see if player would like to play again
+  174                             
+  175 0960  83 C6 02              WIN10:  ADD     SI,2            ;move SI to point to RW
+  176 0963  C6 04 31                      MOV     B[SI],'1'       ;insert ASCII 1 for result output
+  177 0966  46                            INC     SI              ;point to next data slot
+  178 0967  C6 04 30                      MOV     B[SI],'0'       ;insert ASCII 0 for result output
+  179                             
+  180 096A  FE C5 80 FD 0A 74             CHKRND                  ;see if there are more rounds to be played
+  181 0971  E9 6E FF                      JMP     CONT            ;see if player would like to play again
+  182                             
+  183 0974  46                    WIN5:   INC     SI              ;move SI to point to RW
+  184 0975  C6 04 35                      MOV     B[SI],'5'       ;insert ASCII 5 for result output
+  185                             
+  186 0978  FE C5 80 FD 0A 74             CHKRND                  ;see if there are more rounds to be played
+  187 097F  E9 60 FF                      JMP     CONT            ;see if player would like to play again
+  188                             
+  189 0982  BA 8A 06 B4 09 CD     MAXRND: WRITE   NOMORE          ;let player know they can no longer play
+  190 0989  E9 7D FF                      JMP     DONE            ;display results
+  191                             
+  192                             NOGUESS:
+  193 098C  BA BC 06 B4 09 CD             WRITE   GAMEOVA         ;let the player know they lost
+  194 0993  46                            INC     SI              ;add space
+  195 0994  C6 04 30                      MOV     B[SI], '0'      ;player has won zero dollars this round
+  196 0997  FE C5 80 FD 0A 74             CHKRND                  ;see if there are more rounds to be played
+  197 099E  E9 41 FF                      JMP     CONT            ;ask if they want to go again
+  198                             ;
+  199                             ;***************************************************************************
+  200                             ;       SUBROUTINES
+  201                             ;***************************************************************************
+  202                             ;
+  203                             ;       Subroutine "0" - "9" Validity
+  204                             ;
+  205                             ;       Tests a valid for ASCII number 0 to 9
+  206                             ;
+  207                             ;       Entry:  Number to be tested is in AL
+  208                             ;       Exit:   Returns CF = 0 if valid
+  209                             ;               Returns CF = 1 if invalid
+  210                             NUMVALID:
+  211 09A1  3C 30                         CMP     AL, '0'         ;test low range
+  212 09A3  72 06                         JB      NOTVLD          ;too low, error flag is set (CF = 1)
+  213 09A5  3C 39                         CMP     AL, '9'         ;test high range
+  214 09A7  77 02                         JA      NOTVLD          ;too high, error flag is set (CF = 1)
+  215 09A9  F8                            CLC                     ;valid, clear error flag (CF = 0)
+  216 09AA  C3                            RET
+  217 09AB  F9                    NOTVLD: STC                     ;set not valid flag (CF = 1)
+  218 09AC  C3                            RET
+A86 V4.05 assembly of GUESS.COM                                                                                    2014-04-16  17:05
+GUESS GAME                                                                                                         Page 5
+Source: GUESS.ASM                                           
+
+  219                             ;
+
