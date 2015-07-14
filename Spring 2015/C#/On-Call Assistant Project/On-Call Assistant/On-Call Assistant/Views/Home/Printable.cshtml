@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "Quarter Calendar " + DateTime.Now;
+    ViewBag.AppName = "On-Call Assistant";
+
+}
+@section styles {
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="~/Content/fullcalendar.css" rel="stylesheet" />
+    <link href="~/Content/fullcalendar.print.css" rel="stylesheet" media='print' />
+}
+
+@section scripts {
+    <script src="~/Scripts/lib/jquery.min.js"></script>
+    <script src="~/Scripts/lib/moment.min.js"></script>
+    <script src="~/Scripts/fullcalendar.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var todayDate = new Date();
+        var thisMonth = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+        var nextMonth = moment(thisMonth).add(1, 'months')
+        var thirdMonth = moment(thisMonth).add(2, 'months')
+        
+
+        $(document).ready(function () {
+
+            $('#calendar1').fullCalendar({
+                defaultDate: thisMonth,
+                editable: false,
+                firstDay: 3,
+                events: "/home/RotationData/"
+
+            });
+            $('#calendar2').fullCalendar({
+                defaultDate: nextMonth,
+                editable: false,
+                firstDay: 3,
+                events: "/home/RotationData/"
+            });
+            $('#calendar3').fullCalendar({
+                defaultDate: thirdMonth,
+                editable: false,
+                firstDay: 3,
+                events: "/home/RotationData/"
+            });
+            $('.fc-other-month').html('');
+        });
+
+        function printDiv(divName) {
+            var printContents = document.getElementById(divName).innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+
+            window.print();
+
+            document.body.innerHTML = originalContents;
+        }
+    </script>
+
+
+
+
+
+}
+<h2>Quarter Calendar</h2>
+<input type="button" class="btn btn-primary btn-sm" onclick="printDiv('printableArea')" value="Print/Save PDF" />
+
+<div id="printableArea">
+    <div style="padding:15px; page-break-after:always" class="row">
+        <div id="calendar1"></div>
+    </div>
+    <div style="padding:15px; page-break-after:always" class="row">
+        <div id="calendar2"></div>
+    </div>
+    <div style="padding:15px" class="row">
+        <div id="calendar3"></div>
+    </div>
+</div>

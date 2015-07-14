@@ -1,0 +1,77 @@
+﻿@model IEnumerable<On_Call_Assistant.Models.OutOfOffice>
+
+@section styles {
+    <link href="~/Content/fullcalendar.css" rel="stylesheet" />
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+}
+@section scripts {
+    <script src="~/Scripts/lib/jquery.min.js"></script>
+    <script src="~/Scripts/lib/moment.min.js"></script>
+    <script src="~/Scripts/fullcalendar.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#calendar').fullCalendar({
+                editable: false,
+                firstDay: 3,
+                events: "/home/AbsenceData/"
+            });
+        });
+    </script>
+}
+
+@{
+    ViewBag.Title = "Manage Absences";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+
+<div class="jumbotron">
+    <div id="calendar"></div>
+</div>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.startDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.employeeOut.employeeName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.reason.reason)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.numHours)
+        </th>
+        <th>
+            <span class="glyphicon glyphicon-edit"></span>
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.startDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.employeeOut.employeeName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.reason.reason)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.numHours)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>

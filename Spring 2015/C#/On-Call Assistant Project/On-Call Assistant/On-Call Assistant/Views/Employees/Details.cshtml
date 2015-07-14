@@ -1,0 +1,150 @@
+﻿@model On_Call_Assistant.Models.Employee
+
+@{
+    ViewBag.Title = "Details";
+}
+@section styles {
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+}
+
+@section scripts {
+    <script src="~/Scripts/bootstrap.min.js"></script>
+}
+
+
+<h2>Employee Information</h2>
+
+<div>
+    <h4>@Html.DisplayFor(model => model.employeeName)</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.firstName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.firstName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.lastName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.lastName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.assignedApplication.appName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.assignedApplication.appName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.experienceLevel.levelName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.experienceLevel.levelName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.email)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.email)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.hiredDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.hiredDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.birthday)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.birthday)
+        </dd>
+
+
+    </dl>
+</div>
+<div>
+    <dl class="dl-horizontal">
+        <!--Display the vacation information-->
+        <dt>
+            @Html.DisplayNameFor(model => model.alottedVacationHours)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.alottedVacationHours)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.vacHoursTaken)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.vacHoursTaken)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.personalDaysTaken)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.personalDaysTaken)
+        </dd>
+    </dl>
+</div>
+<div>
+    <dl class="dl-horizontal">
+        <!--Display the rotation count information-->
+        <dt>
+            @Html.DisplayNameFor(model => model.rotationCount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.rotationCount)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.primaryRotationCount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.primaryRotationCount)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.secondaryRotationCount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.secondaryRotationCount)
+        </dd>
+    </dl>
+</div>
+<div>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.totHolidayRotations)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.totHolidayRotations)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.primHolidayRotations)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.primHolidayRotations)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.secHolidayRotations)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.secHolidayRotations)
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

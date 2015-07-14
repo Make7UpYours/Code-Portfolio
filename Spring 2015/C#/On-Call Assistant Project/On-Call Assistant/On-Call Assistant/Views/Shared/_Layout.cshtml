@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @RenderSection("styles", required: false)
+
+    @*add*@
+    @Styles.Render("~/Content/themes/base/css")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/Home">
+                    <img src="/content/CommerceBank1.png"
+                         class="img-rounded">
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/Home"><span class="glyphicon glyphicon-home"></span>  Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <span class="glyphicon glyphicon-phone-alt"></span>  On-Call Rotation <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation" class="dropdown-header">On-Call Assistant</li>
+                            <li>
+                                <a href="/Home">
+                                    <span class="glyphicon glyphicon-calendar"></span>  Calendar View
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/OnCallRotations">
+                                    <span class="glyphicon glyphicon-list-alt"></span>   List View
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../Home/Printable">
+                                    <span class="glyphicon glyphicon-print"></span>   Print/PDF View
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <span class="glyphicon glyphicon-cog"></span>   Manage <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation" class="dropdown-header">Employees</li>
+                            <li>
+                                <a href="/Employees">
+                                    <span class="glyphicon glyphicon-user"></span>  Employees List
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Employees/Summary">
+                                    <span class="glyphicon glyphicon-align-justify"></span> Detailed Summary
+                                </a>
+                            </li>
+                            <li role="presentation" class="divider"></li>
+                            <li>
+                                <a href="/Applications">
+                                    <span class="glyphicon glyphicon-file"></span>  Applications
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/outofoffices">
+                                    <span class="glyphicon glyphicon-tent"></span>  Absences/Vacations
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        @Scripts.Render("~/bundles/jquery")
+        @RenderSection("scripts", required: false)
+        
+
+    </div>
+
+</body>
+</html>

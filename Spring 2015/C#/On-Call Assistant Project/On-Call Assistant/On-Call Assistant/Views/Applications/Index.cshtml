@@ -1,0 +1,74 @@
+﻿@model IEnumerable<On_Call_Assistant.Models.Application>
+
+@{
+    ViewBag.Title = "Applications";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+}
+
+@section scripts {
+    <script src="~/Scripts/bootstrap.min.js"></script>
+}
+
+
+<h2>Applications</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.appName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.rotationLength)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.hasOnCall)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.hasSecondary)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.primDisplayColor)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.secDisplayColor)
+        </th>
+        <th>
+            <span class="glyphicon glyphicon-edit"></span>
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.appName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.rotationLength)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.hasOnCall)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.hasSecondary)
+        </td>
+        <td>
+            <div style="height:25px;width:50px;background-color:@item.primDisplayColor;"></div>
+        </td>
+        <td>
+            <div style="height:25px;width:50px;background-color:@item.secDisplayColor;"></div>
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+        </td>
+    </tr>
+}
+
+</table>

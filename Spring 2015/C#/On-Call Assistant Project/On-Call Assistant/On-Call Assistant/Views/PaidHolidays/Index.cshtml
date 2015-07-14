@@ -1,0 +1,39 @@
+﻿@model IEnumerable<On_Call_Assistant.Models.PaidHoliday>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.holidayName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.holidayDate)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.holidayName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.holidayDate)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.paidHolidayID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.paidHolidayID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.paidHolidayID })
+        </td>
+    </tr>
+}
+
+</table>

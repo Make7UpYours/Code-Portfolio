@@ -1,0 +1,94 @@
+﻿@model PagedList.IPagedList<On_Call_Assistant.Models.OnCallRotation>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+@{
+    ViewBag.Title = "Rotaions List";
+    ViewBag.AppName = "On-Call Assistant";
+}
+@section styles {
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+}
+
+@section scripts {
+    <script src="~/Scripts/bootstrap.min.js"></script>
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+
+
+
+
+        <div class="row" style="margin-bottom:15px">
+            <div class="col-md-6">
+@using (Html.BeginForm("Index", "OnCallRotations", FormMethod.Get))
+{
+    <div>
+        Find Employee @Html.TextBox("SearchString", ViewBag.CurrentFilter as string)
+        <input class="btn btn-primary btn-sm" type="submit" value="Search" />
+    </div>
+
+}
+    </div>
+<div class="col-md-6" align="right">
+    <!--page number-->
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+</div>
+    </div>
+
+
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.ActionLink("Start Date", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            End Date
+        </th>
+        <th>
+            Primary On-Call
+        </th>
+        <th>
+            @Html.ActionLink("Employee", "Index", new { sortOrder = ViewBag.EmpSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            <span class="glyphicon glyphicon-edit"></span>
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.startDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.endDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isPrimary)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.employee.employeeName)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.rotationID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.rotationID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.rotationID })
+            </td>
+        </tr>
+    }
+
+</table>
+<div align="center">
+    <!--page navigation-->
+    @Html.PagedListPager(Model, page => Url.Action("Index",
+    new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))
+</div>
+<br />
